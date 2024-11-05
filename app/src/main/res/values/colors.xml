@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Primary Colors -->
+    <color name="myPrimary">#FF6B6B</color> <!-- Main Primary -->
+    <color name="myPrimaryDark">#C04C4C</color> <!-- Darker shade of Primary -->
+    <color name="myPrimaryLight">#FF8C8C</color> <!-- Lighter shade of Primary -->
+
+    <!-- Secondary Colors -->
+    <color name="mySecondary">#D4A017</color> <!-- Main Secondary -->
+    <color name="mySecondaryDark">#A57813</color> <!-- Darker shade of Secondary -->
+    <color name="mySecondaryLight">#E6BF5A</color> <!-- Lighter shade of Secondary -->
+
+    <!-- Neutral and Background Colors -->
+    <color name="offWhite">#F7F6F3</color>
+    <color name="grey">#808080</color> <!-- Main Grey -->
+    <color name="darkGrey">#505050</color> <!-- Darker Grey for contrast -->
+    <color name="lightGrey">#C0C0C0</color> <!-- Lighter Grey for subtle text -->
+
+    <!-- Accent Colors -->
+    <color name="accentBlue">#4A90E2</color> <!-- Accent color for buttons or links -->
+    <color name="accentGreen">#229C22</color> <!-- Accent green for success indicators -->
+    <color name="accentRed">#E57373</color> <!-- Accent red for error indicators -->
+</resources>
