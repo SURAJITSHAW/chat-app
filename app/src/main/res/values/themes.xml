@@ -4,6 +4,9 @@
         <!-- Customize your light theme here. -->
          <item name="colorPrimary">@color/myPrimary</item>
         <item name="colorPrimaryVariant">@color/myPrimary</item>
+        <item name="android:statusBarColor">@color/myPrimary</item>
+        <item name="android:windowLightStatusBar">false</item> <!-- Light icons on dark background -->
+
     </style>
 
     <style name="Theme.ChatApplication" parent="Base.Theme.ChatApplication" />

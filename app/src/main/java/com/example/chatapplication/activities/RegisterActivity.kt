@@ -34,6 +34,7 @@ class RegisterActivity : AppCompatActivity() {
             // Handle the login click, navigate to login screen
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
+            finish()
         }
 
 

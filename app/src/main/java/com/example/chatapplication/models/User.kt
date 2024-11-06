@@ -5,4 +5,5 @@ data class User(
     val email: String = "",
     val userName: String = "",
     val fullName: String = "",
+    val bio: String = "Hey there! I am using Social App",
 )
