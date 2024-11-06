@@ -7,6 +7,37 @@
     android:layout_height="match_parent"
     tools:context=".activities.ProfileActivity">
 
+    <!-- Header Text (Title) -->
+    <TextView
+        android:id="@+id/header"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Set Up Your Profile"
+        android:textColor="@color/myPrimary"
+        android:textSize="24sp"
+        android:letterSpacing="0.12"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/subheader"
+        app:layout_constraintEnd_toEndOf="@+id/subheader"
+        app:layout_constraintStart_toStartOf="@+id/subheader" />
+
+    <!-- Subheader Text (Description) -->
+    <TextView
+        android:id="@+id/subheader"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:lineSpacingExtra="2dp"
+        android:text="Add a few details to help friends find you."
+        android:textColor="@color/grey"
+        android:textSize="16sp"
+        android:layout_marginBottom="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/animationView"
+        app:layout_constraintStart_toStartOf="@+id/animationView"
+        app:layout_constraintEnd_toEndOf="@id/animationView"/>
+
+
     <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/animationView"
         android:layout_marginBottom="180dp"
@@ -75,16 +106,32 @@
         app:layout_constraintStart_toStartOf="@id/guideline"
         app:layout_constraintTop_toBottomOf="@+id/animationView">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/username"
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/input_rounded_corner_bg"
-            android:hint="Enter your username"
-            android:inputType="text"
-            android:maxLength="20"
-            android:padding="20dp"
-            android:textSize="18sp" />
+            android:layout_height="match_parent">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/full_name"
+                android:layout_marginBottom="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/input_rounded_corner_bg"
+                android:hint="Enter your FullName"
+                android:inputType="text"
+                android:maxLength="20"
+                android:padding="20dp"
+                android:textSize="18sp" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/userName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/input_rounded_corner_bg"
+                android:hint="Enter your username (unique)"
+                android:inputType="text"
+                android:maxLength="20"
+                android:padding="20dp"
+                android:textSize="18sp" />
+        </LinearLayout>
     </com.google.android.material.textfield.TextInputLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

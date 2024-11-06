@@ -22,7 +22,7 @@ class SplashActivity : AppCompatActivity() {
         }
 
         Handler(Looper.getMainLooper()).postDelayed({
-            startActivity(Intent(this, OtpSendActivity::class.java))
+            startActivity(Intent(this, RegisterActivity::class.java))
             finish()
         }, 3000)
     }
