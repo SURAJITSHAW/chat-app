@@ -9,11 +9,6 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import com.example.chatapplication.LoginActivity
-import com.example.chatapplication.R
-import com.example.chatapplication.databinding.ActivityMainBinding
 import com.example.chatapplication.databinding.ActivityRegisterBinding
 import com.google.firebase.auth.FirebaseAuth
 

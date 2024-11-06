@@ -93,6 +93,7 @@ class ProfileActivity : AppCompatActivity() {
                 .set(user)
                 .addOnSuccessListener {
                     Toast.makeText(this, "Profile updated successfully!", Toast.LENGTH_SHORT).show()
+                    showProgress(false)
                     startActivity(Intent(this, MainActivity::class.java))
                     finish()  // Go back to the previous activity
                 }
