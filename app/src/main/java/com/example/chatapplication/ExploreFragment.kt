@@ -1,59 +1,82 @@
 package com.example.chatapplication
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.chatapplication.activities.ChatActivity
+import com.example.chatapplication.adapters.ExploreAdapter
+import com.example.chatapplication.databinding.FragmentExploreBinding
+import com.example.chatapplication.models.User
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.gson.Gson
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [ExploreFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class ExploreFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private var _binding: FragmentExploreBinding? = null
+    private val binding get() = _binding!!
+    private lateinit var exploreAdapter: ExploreAdapter
+    private val userList = mutableListOf<User>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_explore, container, false)
+    ): View {
+        _binding = FragmentExploreBinding.inflate(inflater, container, false)
+
+        setupRecyclerView()
+        fetchUsersFromFirestore()
+
+        return binding.root
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ExploreFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ExploreFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    private fun setupRecyclerView() {
+        // Initialize the adapter with an empty list
+        exploreAdapter = ExploreAdapter(userList) { user ->
+            // Handle message icon click, e.g., open chat screen
+            openChatScreen(user)
+        }
+
+        binding.chatRecylerView.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = exploreAdapter
+        }
+    }
+
+    private fun fetchUsersFromFirestore() {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("users") // Make sure your collection name matches Firestore
+            .get()
+            .addOnSuccessListener { documents ->
+                userList.clear()
+                for (document in documents) {
+                    val user = document.toObject(User::class.java)
+                    userList.add(user)
                 }
+                exploreAdapter.notifyDataSetChanged()
             }
+            .addOnFailureListener { exception ->
+                Log.w("ExploreFragment", "Error getting documents: ", exception)
+            }
+    }
+
+    private fun openChatScreen(user: User) {
+        val gson = Gson()
+        val userJson = gson.toJson(user) // Convert the User object to a JSON string
+
+        val intent = Intent(requireContext(), ChatActivity::class.java).apply {
+            putExtra("user_data", userJson)
+        }
+        startActivity(intent)
+    }
+
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

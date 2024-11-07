@@ -38,7 +38,7 @@ class ProfileFragment : Fragment() {
         firestore = FirebaseFirestore.getInstance()
 
         // Fetch user data directly from Firestore
-        fetchUserDataFromFirestore()
+        fetchUserDataFromFirestoreAndSave()
 
         // Set up button clicks
         binding.editButton.setOnClickListener {
@@ -52,12 +52,35 @@ class ProfileFragment : Fragment() {
         binding.logoutButton.setOnClickListener {
             binding.progressBar.visibility = View.VISIBLE
             binding.logoutButton.visibility = View.GONE
+            clearUserDataFromPrefs()
             auth.signOut()
             startActivity(Intent(requireContext(), LoginActivity::class.java))
+            requireActivity().finish()
         }
     }
 
-    private fun fetchUserDataFromFirestore() {
+    private fun fetchUserData() {
+        val sharedPreferences = requireContext().getSharedPreferences("UserProfile", Context.MODE_PRIVATE)
+
+        // Check if user data already exists in SharedPreferences
+        val name = sharedPreferences.getString("fullName", null)
+        val username = sharedPreferences.getString("userName", null)
+        val bio = sharedPreferences.getString("bio", null)
+        val email = sharedPreferences.getString("email", null)
+
+        if (name != null && username != null && bio != null && email != null) {
+            // Data exists in SharedPreferences, use it directly
+            binding.nameEditText.setText(name)
+            binding.usernameEditText.setText(username)
+            binding.bioEditText.setText(bio)
+            binding.emailTextView.text = email
+        } else {
+            // Data does not exist in SharedPreferences, fetch from Firestore
+            fetchUserDataFromFirestoreAndSave()
+        }
+    }
+
+    private fun fetchUserDataFromFirestoreAndSave() {
         val userId = auth.currentUser?.uid
         if (userId != null) {
             firestore.collection("users").document(userId).get()
@@ -73,6 +96,9 @@ class ProfileFragment : Fragment() {
                         binding.usernameEditText.setText(username)
                         binding.bioEditText.setText(bio)
                         binding.emailTextView.text = email
+
+                        // Save data to SharedPreferences for future sessions
+                        saveUserDataToPrefs(name, username, bio, email)
                     } else {
                         Toast.makeText(requireContext(), "No user data found", Toast.LENGTH_SHORT).show()
                     }
@@ -84,6 +110,37 @@ class ProfileFragment : Fragment() {
             Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show()
         }
     }
+
+//
+//    private fun fetchUserDataFromFirestore() {
+//        val userId = auth.currentUser?.uid
+//        if (userId != null) {
+//            firestore.collection("users").document(userId).get()
+//                .addOnSuccessListener { document ->
+//                    if (document.exists()) {
+//                        val name = document.getString("fullName")
+//                        val username = document.getString("userName")
+//                        val bio = document.getString("bio")
+//                        val email = document.getString("email")
+//
+//                        // Set values to the fields
+//                        binding.nameEditText.setText(name)
+//                        binding.usernameEditText.setText(username)
+//                        binding.bioEditText.setText(bio)
+//                        binding.emailTextView.text = email
+//
+//
+//                    } else {
+//                        Toast.makeText(requireContext(), "No user data found", Toast.LENGTH_SHORT).show()
+//                    }
+//                }
+//                .addOnFailureListener { e ->
+//                    Toast.makeText(requireContext(), "Error fetching user data: ${e.message}", Toast.LENGTH_SHORT).show()
+//                }
+//        } else {
+//            Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show()
+//        }
+//    }
 
     private fun toggleEditSave() {
         if (isEditing) {
@@ -124,12 +181,38 @@ class ProfileFragment : Fragment() {
                 .update(user)
                 .addOnSuccessListener {
                     Toast.makeText(requireContext(), "Profile updated successfully!", Toast.LENGTH_SHORT).show()
+
+                    // Save to SharedPreferences for future sessions
+                    saveUserDataToPrefs(name, username, bio)
                 }
                 .addOnFailureListener { e ->
                     Toast.makeText(requireContext(), "Error updating profile: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
         }
     }
+
+    private fun saveUserDataToPrefs(name: String?, username: String?, bio: String?, email: String? = null) {
+        val sharedPreferences = requireContext().getSharedPreferences("UserProfile", Context.MODE_PRIVATE)
+        with(sharedPreferences.edit()) {
+            putString("fullName", name)
+            putString("userName", username)
+            putString("bio", bio)
+
+            // Only update email if it's provided
+            email?.let {
+                putString("email", it)
+            }
+
+            apply()
+        }
+    }
+
+
+    private fun clearUserDataFromPrefs() {
+        val sharedPreferences = requireContext().getSharedPreferences("UserProfile", Context.MODE_PRIVATE)
+        sharedPreferences.edit().clear().apply()  // Clear all data in SharedPreferences
+    }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

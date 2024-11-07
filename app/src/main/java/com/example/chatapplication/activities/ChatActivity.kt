@@ -11,8 +11,10 @@ import com.example.chatapplication.R
 import com.example.chatapplication.adapters.MessagesAdapter
 import com.example.chatapplication.databinding.ActivityChatBinding
 import com.example.chatapplication.models.Message
+import com.example.chatapplication.models.User
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.gson.Gson
 import java.util.UUID
 
 class ChatActivity : AppCompatActivity() {
@@ -22,6 +24,7 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var messagesAdapter: MessagesAdapter
     private val messagesList = mutableListOf<Message>()
 
+    private lateinit var user: User
 
     private lateinit var senderName: String
     private lateinit var senderId: String
@@ -32,11 +35,13 @@ class ChatActivity : AppCompatActivity() {
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Get the chatId from the Intent
-        chatId = intent.getStringExtra("CHAT_ID") ?: ""
-        senderName = intent.getStringExtra("SENDER_NAME").orEmpty()
-        senderId = intent.getStringExtra("SENDER_ID").orEmpty()
-        receiverId = intent.getStringExtra("RECEIVER_ID").orEmpty()
+// Get the JSON string from the intent
+        val userJson = intent.getStringExtra("user_data")
+
+        if (userJson != null) {
+            user = Gson().fromJson(userJson, User::class.java) // Convert JSON string back to User object
+            setupToolbar()
+        }
 
         // Initialize RecyclerView and Adapter
         messagesAdapter = MessagesAdapter(messagesList)
@@ -44,15 +49,32 @@ class ChatActivity : AppCompatActivity() {
         binding.chatRecyclerView.adapter = messagesAdapter
 
         // Fetch messages from Firestore
-        fetchMessages()
+//        fetchMessages()
+//
+//        // Handle message send button click
+//        binding.sendButton.setOnClickListener {
+//            val messageText = binding.messageEditText.text.toString()
+//            if (messageText.isNotEmpty()) {
+//                sendMessage(messageText)
+//                binding.messageEditText.text.clear()  // Clear input after sending
+//            }
+//        }
+    }
 
-        // Handle message send button click
-        binding.sendButton.setOnClickListener {
-            val messageText = binding.messageEditText.text.toString()
-            if (messageText.isNotEmpty()) {
-                sendMessage(messageText)
-                binding.messageEditText.text.clear()  // Clear input after sending
-            }
+    private fun setupToolbar() {
+        // Set up the custom toolbar with the user details
+        setSupportActionBar(binding.customToolbar)
+
+        // Disable default title display in the toolbar
+        supportActionBar?.title = null
+
+        // Set the user's full name and username in the toolbar
+        binding.toolbarFullName.text = user.fullName
+        binding.toolbarUsername.text = user.userName
+
+        // Handle the back button click
+        binding.backButton.setOnClickListener {
+            onBackPressed()  // Go back to the previous screen
         }
     }
 
