@@ -35,7 +35,7 @@ class ChatActivity : AppCompatActivity() {
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-// Get the JSON string from the intent
+        // Get the JSON string from the intent
         val userJson = intent.getStringExtra("user_data")
 
         if (userJson != null) {
@@ -78,51 +78,71 @@ class ChatActivity : AppCompatActivity() {
         }
     }
 
-    private fun fetchMessages() {
-        val db = FirebaseFirestore.getInstance()
-        val messagesRef = db.collection("chats")
-            .document(chatId)
-            .collection("messages")
-            .orderBy("timestamp")
-
-        messagesRef.addSnapshotListener { snapshots, exception ->
-            if (exception != null) {
-                Toast.makeText(this, "Error fetching messages", Toast.LENGTH_SHORT).show()
-                return@addSnapshotListener
-            }
-
-            if (snapshots != null) {
-                messagesList.clear()  // Clear the previous list
-                for (doc in snapshots) {
-                    val message = doc.toObject(Message::class.java)
-                    messagesList.add(message)
-                }
-                messagesAdapter.notifyDataSetChanged()  // Notify adapter to update UI
-            }
-        }
-    }
-
-    private fun sendMessage(messageText: String) {
-        val db = FirebaseFirestore.getInstance()
-        val newMessage = Message(
-            messageId = UUID.randomUUID().toString(),
-            senderId = senderId,  // Get the current user ID
-            senderName = senderName,  // Get the current user name
-            receiverId = receiverId,  // Get the receiver's user ID
-            messageText = messageText,
-            timestamp = Timestamp.now(),
-            isRead = false
-        )
-
-        db.collection("chats")
-            .document(chatId)
-            .collection("messages")
-            .add(newMessage)
-            .addOnSuccessListener {
-                // Handle success, message sent
-            }
-            .addOnFailureListener {
-                Toast.makeText(this, "Failed to send message", Toast.LENGTH_SHORT).show()
-            }
-    }
+//    private fun fetchMessagesForChat() {
+//        val chatRef = firestore.collection("chats")
+//            .whereEqualTo("user1Id", currentUserId)
+//            .whereEqualTo("user2Id", user.uid)
+//
+//        chatRef.get()
+//            .addOnSuccessListener { documents ->
+//                if (documents.isNotEmpty()) {
+//                    val chat = documents.first().toObject(Chat::class.java)
+//                    // Display the chat messages here
+//                    // chat.messages should contain the list of messages
+//                } else {
+//                    // Handle if no chat is found, maybe show a message or something
+//                    Log.d("ChatActivity", "No chat found")
+//                }
+//            }
+//            .addOnFailureListener { e ->
+//                Log.w("ChatActivity", "Error fetching chat messages", e)
+//            }
+//    }
+//    private fun fetchMessages() {
+//        val db = FirebaseFirestore.getInstance()
+//        val messagesRef = db.collection("chats")
+//            .document(chatId)
+//            .collection("messages")
+//            .orderBy("timestamp")
+//
+//        messagesRef.addSnapshotListener { snapshots, exception ->
+//            if (exception != null) {
+//                Toast.makeText(this, "Error fetching messages", Toast.LENGTH_SHORT).show()
+//                return@addSnapshotListener
+//            }
+//
+//            if (snapshots != null) {
+//                messagesList.clear()  // Clear the previous list
+//                for (doc in snapshots) {
+//                    val message = doc.toObject(Message::class.java)
+//                    messagesList.add(message)
+//                }
+//                messagesAdapter.notifyDataSetChanged()  // Notify adapter to update UI
+//            }
+//        }
+//    }
+//
+//    private fun sendMessage(messageText: String) {
+//        val db = FirebaseFirestore.getInstance()
+//        val newMessage = Message(
+//            messageId = UUID.randomUUID().toString(),
+//            senderId = senderId,  // Get the current user ID
+//            senderName = senderName,  // Get the current user name
+//            receiverId = receiverId,  // Get the receiver's user ID
+//            messageText = messageText,
+//            timestamp = Timestamp.now(),
+//            isRead = false
+//        )
+//
+//        db.collection("chats")
+//            .document(chatId)
+//            .collection("messages")
+//            .add(newMessage)
+//            .addOnSuccessListener {
+//                // Handle success, message sent
+//            }
+//            .addOnFailureListener {
+//                Toast.makeText(this, "Failed to send message", Toast.LENGTH_SHORT).show()
+//            }
+//    }
 }

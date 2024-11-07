@@ -13,8 +13,10 @@ import com.example.chatapplication.activities.ChatActivity
 import com.example.chatapplication.adapters.ChatCardAdapter
 import com.example.chatapplication.databinding.FragmentChatsBinding
 import com.example.chatapplication.models.Chat
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.gson.Gson
 
 class ChatsFragment : Fragment() {
 
@@ -31,44 +33,75 @@ class ChatsFragment : Fragment() {
     ): View? {
         _binding = FragmentChatsBinding.inflate(inflater, container, false)
 
-        // Set up RecyclerView
-        binding.chatRecylerView.layoutManager = LinearLayoutManager(context)
-        chatAdapter = ChatCardAdapter(chatList) { chat ->
-            // Handle chat click
-            Toast.makeText(context, "Clicked on ${chat.user1Name}", Toast.LENGTH_SHORT).show()
-            val chatIds = chat.chatId.split("_")
-
-            val intent = Intent(activity, ChatActivity::class.java)
-            intent.putExtra("CHAT_ID", chat.chatId)
-            intent.putExtra("SENDER_NAME", chat.user1Name)
-            intent.putExtra("SENDER_ID", chatIds[1])
-            intent.putExtra("RECEIVER_ID", chatIds[0])
-            startActivity(intent)
-        }
-        binding.chatRecylerView.adapter = chatAdapter
-
-        // Fetch chats from Firestore
-        fetchChatsFromFirestore()
+        fetchRecentChats()
 
         return binding.root
+
     }
 
-    private fun fetchChatsFromFirestore() {
-        db.collection("chats")
-            .orderBy("lastMessageTimestamp", Query.Direction.DESCENDING)
-            .get()
+    private fun fetchRecentChats() {
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+        val firestore = FirebaseFirestore.getInstance()
+
+        Log.d("ChatListActivity", "Current User ID: $currentUserId")
+
+        if (currentUserId != null) {
+            // Query for chats where the current user is user1Id
+            val chatRef1 = firestore.collection("chats")
+                .whereEqualTo("user1Id", currentUserId)
+
+            // Query for chats where the current user is user2Id
+            val chatRef2 = firestore.collection("chats")
+                .whereEqualTo("user2Id", currentUserId)
+
+            // Fetch both queries asynchronously
+            val chatList = mutableListOf<Chat>()
+
+            // Fetch user1Id chats
+            chatRef1.get()
+                .addOnSuccessListener { documents ->
+                    for (document in documents) {
+                        val chat = document.toObject(Chat::class.java)
+                        chatList.add(chat)
+                    }
+                    // After the first query finishes, fetch the second query
+                    fetchUser2Chats(chatList, chatRef2)
+                }
+                .addOnFailureListener { e ->
+                    Log.w("ChatListActivity", "Error getting chats for user1Id", e)
+                }
+        }
+    }
+
+    private fun fetchUser2Chats(chatList: MutableList<Chat>, chatRef2: Query) {
+        chatRef2.get()
             .addOnSuccessListener { documents ->
-                chatList.clear()
                 for (document in documents) {
                     val chat = document.toObject(Chat::class.java)
                     chatList.add(chat)
                 }
-                chatAdapter.notifyDataSetChanged()
+                Log.d("ChatListActivity", "Chat List: $chatList")
+                // Update the RecyclerView with the merged chat list
+                updateChatList(chatList)
             }
             .addOnFailureListener { e ->
-                Log.e("ChatsFragment", "Error fetching chats", e)
-                Toast.makeText(context, "Failed to load chats", Toast.LENGTH_SHORT).show()
+                Log.w("ChatListActivity", "Error getting chats for user2Id", e)
             }
+    }
+
+    private fun updateChatList(chatList: List<Chat>) {
+        binding.chatRecylerView.layoutManager = LinearLayoutManager(context)
+        chatAdapter = ChatCardAdapter(chatList, { chat ->
+                val gson = Gson()
+                val chatJson = gson.toJson(chat) // Convert the Chat object to a JSON string
+
+                val intent = Intent(requireContext(), ChatActivity::class.java).apply {
+                    putExtra("chat_data", chatJson)
+                }
+                startActivity(intent)
+        }, requireContext())
+        binding.chatRecylerView.adapter = chatAdapter
+
     }
 
     override fun onDestroyView() {

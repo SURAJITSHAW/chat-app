@@ -51,7 +51,7 @@ class SplashActivity : AppCompatActivity() {
                     val email = document.getString("email") ?: ""
 
                     // Save the fetched data into SharedPreferences
-                    val user = User(username, fullName, userId, email, bio)
+                    val user = User(userId, email,username, fullName,  bio)
                     saveUserDataToPrefs(user)
 
                     // Proceed to the next screen after data is saved
