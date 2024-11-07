@@ -5,6 +5,9 @@
     <item android:title="Chats"
         android:icon="@drawable/chat"
         android:id="@+id/chatsFragment"/>
+    <item android:title="Explore"
+        android:icon="@drawable/find_people"
+        android:id="@+id/exploreFragment"/>
     <item android:title="Profile"
         android:icon="@drawable/user"
         android:id="@+id/profileFragment"/>

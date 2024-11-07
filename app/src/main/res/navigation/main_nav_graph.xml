@@ -15,4 +15,9 @@
         android:name="com.example.chatapplication.ProfileFragment"
         android:label="fragment_profile"
         tools:layout="@layout/fragment_profile" />
+    <fragment
+        android:id="@+id/exploreFragment"
+        android:name="com.example.chatapplication.ExploreFragment"
+        android:label="fragment_explore"
+        tools:layout="@layout/fragment_explore" />
 </navigation>

@@ -1,5 +1,6 @@
 package com.example.chatapplication
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -36,8 +37,8 @@ class ProfileFragment : Fragment() {
         auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
 
-        // Fetch user data from Firestore when the fragment is created
-        fetchUserData()
+        // Fetch user data directly from Firestore
+        fetchUserDataFromFirestore()
 
         // Set up button clicks
         binding.editButton.setOnClickListener {
@@ -56,7 +57,7 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    private fun fetchUserData() {
+    private fun fetchUserDataFromFirestore() {
         val userId = auth.currentUser?.uid
         if (userId != null) {
             firestore.collection("users").document(userId).get()
@@ -93,7 +94,7 @@ class ProfileFragment : Fragment() {
             binding.editButton.setBackgroundColor(resources.getColor(R.color.mySecondary, null))
             binding.editButton.text = "Edit Details"
 
-            // Save data to Firestore if necessary (optional)
+            // Save data to Firestore
             saveUserProfile()
         } else {
             // Edit state - Enable editing
@@ -113,14 +114,14 @@ class ProfileFragment : Fragment() {
             val username = binding.usernameEditText.text.toString().trim()
             val bio = binding.bioEditText.text.toString().trim()
 
-            val user = hashMapOf(
+            val user = hashMapOf<String, Any>(
                 "fullName" to name,
                 "userName" to username,
                 "bio" to bio
             )
 
             firestore.collection("users").document(userId)
-                .set(user)
+                .update(user)
                 .addOnSuccessListener {
                     Toast.makeText(requireContext(), "Profile updated successfully!", Toast.LENGTH_SHORT).show()
                 }

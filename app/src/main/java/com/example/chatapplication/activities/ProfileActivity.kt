@@ -45,18 +45,22 @@ class ProfileActivity : AppCompatActivity() {
             val fullName = binding.fullName.text.toString().trim()
             val userName = binding.userName.text.toString().trim()
 
-            if (fullName.isEmpty() || userName.isEmpty()) {
-                showProgress(false)
+            if (email != null) {
+                if (fullName.isEmpty() || userName.isEmpty() || email.isEmpty()) {
+                    showProgress(false)
 
-                showToast("Please enter your details properly!")
-                return@setOnClickListener
+                    showToast("Please enter your details properly!")
+                    return@setOnClickListener
+                }
+            } else {
+                startActivity(Intent(this, LoginActivity::class.java))
             }
 
 
             // Check if the userName is unique
             checkUsernameUnique(userName) { isUnique ->
                 if (isUnique) {
-                    saveUserProfile(fullName, userName)
+                    saveUserProfile(fullName, userName, email!!)
                 } else {
                     Toast.makeText(this, "Username already taken, try another.", Toast.LENGTH_SHORT).show()
                 }
@@ -78,11 +82,11 @@ class ProfileActivity : AppCompatActivity() {
             }
     }
     // Function to save the user profile to Firestore
-    private fun saveUserProfile(fullName: String, userName: String) {
+    private fun saveUserProfile(fullName: String, userName: String, email: String) {
         val currentUser = auth.currentUser
         if (currentUser != null) {
             val user = User(
-                email = currentUser.email ?: "",
+                email = email,
                 userName = userName,
                 fullName = fullName,
                 uid = currentUser.uid

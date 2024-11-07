@@ -10,14 +10,14 @@
         android:id="@+id/chatsHeading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Chats"
+        android:text="Explore"
         android:textSize="30sp"
         android:textStyle="bold"
         android:textColor="@color/myPrimary"
         android:layout_marginBottom="8dp" />
 
     <androidx.recyclerview.widget.RecyclerView
-        tools:listitem="@layout/chat_item"
+        tools:listitem="@layout/explore_item"
         android:id="@+id/chatRecylerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
