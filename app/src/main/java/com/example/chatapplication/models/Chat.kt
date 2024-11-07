@@ -10,7 +10,7 @@ data class Chat(
     val user1Name: String = "",
     val user2Name: String = "",
     val lastMessage: String = "",
-    val lastMessageTimestamp: Long? = null,
+    val lastMessageTimestamp: Timestamp? = null,
     val isRead: Boolean = false,
 )
 

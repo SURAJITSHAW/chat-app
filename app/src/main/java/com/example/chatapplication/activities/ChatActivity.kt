@@ -1,6 +1,7 @@
 package com.example.chatapplication.activities
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -10,139 +11,126 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.chatapplication.R
 import com.example.chatapplication.adapters.MessagesAdapter
 import com.example.chatapplication.databinding.ActivityChatBinding
+import com.example.chatapplication.models.Chat
 import com.example.chatapplication.models.Message
 import com.example.chatapplication.models.User
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import java.util.UUID
 
+
 class ChatActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityChatBinding
+    private lateinit var chatAdapter: MessagesAdapter
     private lateinit var chatId: String
-    private lateinit var messagesAdapter: MessagesAdapter
-    private val messagesList = mutableListOf<Message>()
-
-    private lateinit var user: User
-
-    private lateinit var senderName: String
-    private lateinit var senderId: String
-    private lateinit var receiverId: String
+    private lateinit var currentUserId: String
+    private lateinit var chat: Chat
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Get the JSON string from the intent
-        val userJson = intent.getStringExtra("user_data")
+        // Get the chat data passed from the previous screen
+        val chatJson = intent.getStringExtra("chat_data")
+        chat = Gson().fromJson(chatJson, Chat::class.java)
 
-        if (userJson != null) {
-            user = Gson().fromJson(userJson, User::class.java) // Convert JSON string back to User object
-            setupToolbar()
+        Log.d("ChatActivity", "Received chat data: $chat")
+        currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+
+        // Set up the toolbar with user information
+        setupToolbar(chat)
+
+        // Set up RecyclerView for displaying messages
+        setupRecyclerView()
+
+        // Set up the send button click listener
+        binding.sendButton.setOnClickListener {
+            sendMessage()
         }
-
-        // Initialize RecyclerView and Adapter
-        messagesAdapter = MessagesAdapter(messagesList)
-        binding.chatRecyclerView.layoutManager = LinearLayoutManager(this)
-        binding.chatRecyclerView.adapter = messagesAdapter
-
-        // Fetch messages from Firestore
-//        fetchMessages()
-//
-//        // Handle message send button click
-//        binding.sendButton.setOnClickListener {
-//            val messageText = binding.messageEditText.text.toString()
-//            if (messageText.isNotEmpty()) {
-//                sendMessage(messageText)
-//                binding.messageEditText.text.clear()  // Clear input after sending
-//            }
-//        }
     }
 
-    private fun setupToolbar() {
-        // Set up the custom toolbar with the user details
-        setSupportActionBar(binding.customToolbar)
-
-        // Disable default title display in the toolbar
+    private fun setupToolbar(chat: Chat) {
+        // Use the other user's name for the toolbar title
+        val otherUserName = if (chat.user1Id == currentUserId) chat.user2Name else chat.user1Name
         supportActionBar?.title = null
+        binding.toolbarFullName.text = otherUserName
+    }
 
-        // Set the user's full name and username in the toolbar
-        binding.toolbarFullName.text = user.fullName
-        binding.toolbarUsername.text = user.userName
+    private fun setupRecyclerView() {
+        // Fetch chat messages from Firestore
+        val firestore = FirebaseFirestore.getInstance()
+        val chatRef = firestore.collection("chats").document(chat.chatId)
 
-        // Handle the back button click
-        binding.backButton.setOnClickListener {
-            onBackPressed()  // Go back to the previous screen
+        chatRef.addSnapshotListener { snapshot, e ->
+            if (e != null) {
+                Log.w("ChatActivity", "Listen failed.", e)
+                return@addSnapshotListener
+            }
+
+            if (snapshot != null && snapshot.exists()) {
+                // Get the list of messages and convert them to Message objects
+                val messages = snapshot.get("messages") as? List<Map<String, Any>> ?: emptyList()
+
+                // Convert the list of maps to a list of Message objects
+                val messageList = messages.map { messageData ->
+                    Message(
+                        messageId = messageData["messageId"] as? String ?: "",
+                        senderId = messageData["senderId"] as? String ?: "",
+                        receiverId = messageData["receiverId"] as? String ?: "",
+                        messageText = messageData["messageText"] as? String ?: "",
+                        timestamp = messageData["timestamp"] as? Timestamp ?: Timestamp.now()
+                    )
+                }
+
+                // Pass the messageList to the adapter
+                chatAdapter = MessagesAdapter(messageList, currentUserId)
+                binding.chatRecyclerView.layoutManager = LinearLayoutManager(this)
+                binding.chatRecyclerView.adapter = chatAdapter
+            }
         }
     }
 
-//    private fun fetchMessagesForChat() {
-//        val chatRef = firestore.collection("chats")
-//            .whereEqualTo("user1Id", currentUserId)
-//            .whereEqualTo("user2Id", user.uid)
-//
-//        chatRef.get()
-//            .addOnSuccessListener { documents ->
-//                if (documents.isNotEmpty()) {
-//                    val chat = documents.first().toObject(Chat::class.java)
-//                    // Display the chat messages here
-//                    // chat.messages should contain the list of messages
-//                } else {
-//                    // Handle if no chat is found, maybe show a message or something
-//                    Log.d("ChatActivity", "No chat found")
-//                }
-//            }
-//            .addOnFailureListener { e ->
-//                Log.w("ChatActivity", "Error fetching chat messages", e)
-//            }
-//    }
-//    private fun fetchMessages() {
-//        val db = FirebaseFirestore.getInstance()
-//        val messagesRef = db.collection("chats")
-//            .document(chatId)
-//            .collection("messages")
-//            .orderBy("timestamp")
-//
-//        messagesRef.addSnapshotListener { snapshots, exception ->
-//            if (exception != null) {
-//                Toast.makeText(this, "Error fetching messages", Toast.LENGTH_SHORT).show()
-//                return@addSnapshotListener
-//            }
-//
-//            if (snapshots != null) {
-//                messagesList.clear()  // Clear the previous list
-//                for (doc in snapshots) {
-//                    val message = doc.toObject(Message::class.java)
-//                    messagesList.add(message)
-//                }
-//                messagesAdapter.notifyDataSetChanged()  // Notify adapter to update UI
-//            }
-//        }
-//    }
-//
-//    private fun sendMessage(messageText: String) {
-//        val db = FirebaseFirestore.getInstance()
-//        val newMessage = Message(
-//            messageId = UUID.randomUUID().toString(),
-//            senderId = senderId,  // Get the current user ID
-//            senderName = senderName,  // Get the current user name
-//            receiverId = receiverId,  // Get the receiver's user ID
-//            messageText = messageText,
-//            timestamp = Timestamp.now(),
-//            isRead = false
-//        )
-//
-//        db.collection("chats")
-//            .document(chatId)
-//            .collection("messages")
-//            .add(newMessage)
-//            .addOnSuccessListener {
-//                // Handle success, message sent
-//            }
-//            .addOnFailureListener {
-//                Toast.makeText(this, "Failed to send message", Toast.LENGTH_SHORT).show()
-//            }
-//    }
+    private fun sendMessage() {
+        val messageText = binding.messageEditText.text.toString()
+        if (messageText.isNotEmpty()) {
+            val firestore = FirebaseFirestore.getInstance()
+            val chatRef = firestore.collection("chats").document(chat.chatId)
+
+            // Create a new Message object
+            val newMessage = Message(
+                messageId = UUID.randomUUID().toString(),
+                senderId = currentUserId,
+                receiverId = if (chat.user1Id == currentUserId) chat.user2Id else chat.user1Id,
+                messageText = messageText,
+                timestamp = Timestamp.now()
+            )
+
+            // Start a Firestore transaction
+            firestore.runTransaction { transaction ->
+                // Fetch the chat document
+                val snapshot = transaction.get(chatRef)
+                if (snapshot.exists()) {
+                    // Add the new message to the "messages" field
+                    transaction.update(chatRef, "messages", FieldValue.arrayUnion(newMessage))
+
+                    // Update the lastMessage and lastMessageTimestamp fields
+                    transaction.update(chatRef, "lastMessage", messageText)
+                    transaction.update(chatRef, "lastMessageTimestamp", Timestamp.now())
+                }
+                null
+            }.addOnSuccessListener {
+                binding.messageEditText.text.clear() // Clear input field after sending
+            }.addOnFailureListener { e ->
+                Log.w("ChatActivity", "Error sending message", e)
+            }
+        }
+    }
+
+
 }
+

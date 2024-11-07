@@ -36,11 +36,12 @@ class ChatCardAdapter(
             // Format and display the timestamp of the last message
             val timestampFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
 
-// Convert the Long timestamp to Date
-            val date = chat.lastMessageTimestamp?.let { Date(it) }
+// Convert the Firestore Timestamp to Date
+            val date = chat.lastMessageTimestamp?.toDate()
 
 // Format the Date
             binding.timestamp.text = date?.let { timestampFormat.format(it) } ?: "Unknown time"
+
 
 
             // Set click listener for the entire item
