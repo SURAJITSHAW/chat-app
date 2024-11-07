@@ -1,5 +1,6 @@
 package com.example.chatapplication.activities
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -97,6 +98,7 @@ class ProfileActivity : AppCompatActivity() {
                 .set(user)
                 .addOnSuccessListener {
                     Toast.makeText(this, "Profile updated successfully!", Toast.LENGTH_SHORT).show()
+                    saveUserDataToPrefs(user)
                     showProgress(false)
                     startActivity(Intent(this, MainActivity::class.java))
                     finish()  // Go back to the previous activity
@@ -104,6 +106,16 @@ class ProfileActivity : AppCompatActivity() {
                 .addOnFailureListener { e ->
                     Toast.makeText(this, "Error saving profile: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
+        }
+    }
+    private fun saveUserDataToPrefs(user: User) {
+        val sharedPref = getSharedPreferences("UserProfile", Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            putString("userName", user.userName)
+            putString("fullName", user.fullName)
+            putString("uid", user.uid)
+            putString("email", user.email)
+            apply()
         }
     }
 

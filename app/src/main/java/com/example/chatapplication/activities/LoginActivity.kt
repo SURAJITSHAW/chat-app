@@ -51,10 +51,8 @@ class LoginActivity : AppCompatActivity() {
             if (validateEmailPassword()) {
                 // Proceed with registration if validation passes
                 login()
-            } else {
-                showProgress(false)
             }
-
+           showProgress(false)
         }
     }
 
@@ -85,6 +83,8 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
     }
+
+
 
     private fun validateEmailPassword(): Boolean {
         password = binding.pass.text.toString()

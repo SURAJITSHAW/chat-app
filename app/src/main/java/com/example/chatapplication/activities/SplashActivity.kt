@@ -35,9 +35,11 @@ class SplashActivity : AppCompatActivity() {
             // If user is logged in, fetch and store their data
             fetchUserDataAndStoreInPrefs(currentUser.uid)
         } else {
-            // If no user is logged in, redirect to RegistrationActivity
-            startActivity(Intent(this, RegisterActivity::class.java))
-            finish()  // Close splash screen
+            Handler(Looper.getMainLooper()).postDelayed({
+                // If no user is logged in, redirect to RegistrationActivity
+                startActivity(Intent(this, RegisterActivity::class.java))
+                finish()  // Close splash screen
+            }, 2000)  // Optional delay for splash screen
         }
     }
 

@@ -90,19 +90,27 @@ class ChatsFragment : Fragment() {
     }
 
     private fun updateChatList(chatList: List<Chat>) {
-        binding.chatRecylerView.layoutManager = LinearLayoutManager(context)
-        chatAdapter = ChatCardAdapter(chatList, { chat ->
+        if (chatList.isEmpty()) {
+            binding.chatRecylerView.visibility = View.GONE
+            binding.noChats.visibility = View.VISIBLE // Show message
+        } else {
+            binding.chatRecylerView.visibility = View.VISIBLE
+            binding.noChats.visibility = View.GONE    // Hide message
+
+            binding.chatRecylerView.layoutManager = LinearLayoutManager(context)
+            chatAdapter = ChatCardAdapter(chatList, { chat ->
                 val gson = Gson()
-                val chatJson = gson.toJson(chat) // Convert the Chat object to a JSON string
+                val chatJson = gson.toJson(chat)
 
                 val intent = Intent(requireContext(), ChatActivity::class.java).apply {
                     putExtra("chat_data", chatJson)
                 }
                 startActivity(intent)
-        }, requireContext())
-        binding.chatRecylerView.adapter = chatAdapter
-
+            }, requireContext())
+            binding.chatRecylerView.adapter = chatAdapter
+        }
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()
